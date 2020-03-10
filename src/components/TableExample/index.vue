@@ -23,7 +23,8 @@
                                 </el-form-item>
 
                                 <el-form-item label="搜尋項目二">
-                                    <el-input v-model="item2Value"></el-input>
+                                    <el-input v-model="item2Value"
+                                              @input="secondDecimalAndIntegerRegexForItem2Value"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -36,7 +37,7 @@
                                     <!--<el-radio v-model="item3Value" label="radio-2"></el-radio>-->
 
                                     <!--項目多時使用v-for-->
-                                    <el-radio v-for="item in radioItems" v-model="item3Value" :key="item.key"
+                                    <el-radio v-for="item in radioItems" v-model="item3Value" :key="item.value"
                                               :label="item.value"></el-radio>
                                 </el-form-item>
                             </el-col>
@@ -62,33 +63,44 @@
                 <el-row>
                     <!--    table各屬性解析：border(外框)、stripe(斑馬紋)    -->
                     <el-table
-                            class="tb-edit"
                             :data="tableData"
                             stripe
                             border
-                            highlight-current-row
+                            class="edit-table"
                             style="width: 100%"
-                            @row-click="handleCurrentChange">
-                        <el-table-column label="日期" width="180">
-                            <template scope="scope">
-                                <el-input size="small" v-model="scope.row.date" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input> <span>{{scope.row.date}}</span>
+                            @cell-click="tableCellClick">
+                        <el-table-column
+                                label="日期"
+                                width="180">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.date}}</span>
+                                <el-select
+                                        v-model="selectValue"
+                                        placeholder="請選擇" @blur="leaveEditCell">
+                                    <el-option
+                                            v-for="item in options"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                    </el-option>
+                                </el-select>
                             </template>
                         </el-table-column>
-                        <el-table-column label="姓名" width="180">
-                            <template scope="scope">
-                                <el-input size="small" v-model="scope.row.name" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input> <span>{{scope.row.name}}</span>
+                        <el-table-column
+                                prop="name"
+                                label="姓名"
+                                width="180">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.name}}</span>
+                                <el-input
+                                        v-model="nameValue" @blur="leaveEditCell">
+
+                                </el-input>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="address" label="地址">
-                            <template scope="scope">
-                                <el-input size="small" v-model="scope.row.address" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input> <span>{{scope.row.address}}</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="操作">
-                            <template scope="scope">
-                                <!--<el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>-->
-                                <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                            </template>
+                        <el-table-column
+                                prop="address"
+                                label="地址">
                         </el-table-column>
                     </el-table>
                 </el-row>
@@ -100,6 +112,9 @@
     export default {
         data() {
             return {
+                //當前編輯列id
+                editRowId: '',
+
                 //搜尋項目一 -- 值
                 item1Value: '',
                 item2Value: '',
@@ -110,7 +125,7 @@
                 select1Options: [
                     {
                         label: '1',
-                        value: 1
+                        value: 'select-1',
                     }
                 ],
 
@@ -131,22 +146,46 @@
                 ],
                 //table資料
                 tableData: [{
+                    id: 1,
                     date: '2016-05-02',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1518 弄'
                 }, {
+                    id: 2,
                     date: '2016-05-04',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1517 弄'
                 }, {
+                    id: 3,
                     date: '2016-05-01',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1519 弄'
                 }, {
+                    id: 4,
                     date: '2016-05-03',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1516 弄'
                 }],
+
+                //select選項
+                options: [{
+                    value: '选项1',
+                    label: '黄金糕'
+                }, {
+                    value: '选项2',
+                    label: '双皮奶'
+                }, {
+                    value: '选项3',
+                    label: '蚵仔煎'
+                }, {
+                    value: '选项4',
+                    label: '龙须面'
+                }, {
+                    value: '选项5',
+                    label: '北京烤鸭'
+                }],
+                selectValue: '',
+                nameValue: '',
             }
         },
         created() {
@@ -157,26 +196,67 @@
         },
         watch: {},
         methods: {
-            handleEdit(index, row) {
-                console.log(index, row);
+            secondDecimalAndIntegerRegexForItem2Value(value) {
+                let reg = /^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,2})?$/;
+                console.log(reg.test(value));
+                // this.item2Value = value.replace(//, '');
             },
-            // handleCurrentChange(row, event, column) {
-            //     console.log(row, event, column, event.currentTarget)
-            // },
-            handleCurrentChange(row, event) {
-                console.log(row, event)
+            tableCellClick(row, column, cell){
+                switch (column.label) {
+                    case this.$t('date'): {
+                        this.dateCellEdit(row, cell);
+                        break;
+                    }
+                    case this.$t('name'): {
+                        this.nameCellEidt(row, cell);
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
             },
+            /**
+             *
+             * @param row
+             * @param cell
+             */
+            dateCellEdit(row, cell){
+                this.editRowId = row.id;
+                let cell_string = cell.children[0].children[0];
+                let cell_input = cell.children[0].children[1];
+                cell_string.style.display = 'none';
+                cell_input.style.display = 'block';
+            },
+            /**
+             *
+             * @param row
+             * @param cell
+             */
+            nameCellEidt(row, cell){
+                let cell_string = cell.children[0].children[0];
+                let cell_input = cell.children[0].children[1];
+                console.log(cell_string);
+                cell_string.style.display = 'none';
+                cell_input.style.display = 'block';
+            },
+            leaveEditCell(){
+                // alert(this.selectValue);
+            },
+            leaveSelectEditCell() {
+                alert(this.selectValue);
+            }
+
         }
     }
 </script>
-<style>
-    .tb-edit .el-input {
-        display: none
-    }
-    .tb-edit .current-row .el-input {
-        display: block
-    }
-    .tb-edit .current-row .el-input+span {
-        display: none
+<style lang="scss">
+    .edit-table {
+        .el-select {
+            display: none;
+        }
+        .el-input {
+            display: none;
+        }
     }
 </style>
