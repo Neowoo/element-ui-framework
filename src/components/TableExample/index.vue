@@ -1,5 +1,5 @@
 <template>
-    <el-container>
+    <el-container style="height: 100vh">
         <el-main>
             <el-card>
                 <div slot="header" class="clearfix">
@@ -68,15 +68,15 @@
                             border
                             class="edit-table"
                             style="width: 100%"
-                            @cell-click="tableCellClick">
+                    >
                         <el-table-column
                                 label="日期"
                                 width="180">
                             <template slot-scope="scope">
-                                <span>{{scope.row.date}}</span>
+                                <!--                                <span>{{scope.row.date}}</span>-->
                                 <el-select
-                                        v-model="selectValue"
-                                        placeholder="請選擇" @blur="leaveEditCell">
+                                        v-model="tableData[scope.$index].date"
+                                        placeholder="請選擇" @focus="focusSelect" @blur="leaveEditSelect">
                                     <el-option
                                             v-for="item in options"
                                             :key="item.value"
@@ -91,9 +91,9 @@
                                 label="姓名"
                                 width="180">
                             <template slot-scope="scope">
-                                <span>{{scope.row.name}}</span>
+                                <!--                                <span>{{scope.row.name}}</span>-->
                                 <el-input
-                                        v-model="nameValue" @blur="leaveEditCell">
+                                        v-model="tableData[scope.$index].name" @focus="focusInput" @blur="leaveEditCell">
 
                                 </el-input>
                             </template>
@@ -101,9 +101,35 @@
                         <el-table-column
                                 prop="address"
                                 label="地址">
+                            <template slot-scope="scope">
+                                <el-input
+                                        v-model="tableData[scope.$index].address" @focus="focusInput" @blur="leaveEditCell">
+
+                                </el-input>
+                            </template>
                         </el-table-column>
                     </el-table>
                 </el-row>
+                <el-row>
+                    <el-col style="text-align: center;margin-top: 20px">
+                        <el-popover
+                                placement="top"
+                                width="160"
+                                v-model="visible">
+                            <p>这是一段内容这是一段内容确定删除吗？</p>
+                            <div style="text-align: right; margin: 0">
+                                <el-button size="mini" type="text" @click="visible = false">取消</el-button>
+                                <el-button type="primary" size="mini" @click="visible = false">确定</el-button>
+                            </div>
+                            <el-button type="primary" slot="reference">新增</el-button>
+                        </el-popover>
+                        <el-button type="primary" @click="changeTableData">
+                            測試
+                        </el-button>
+                    </el-col>
+                </el-row>
+
+
             </el-card>
         </el-main>
     </el-container>
@@ -112,6 +138,9 @@
     export default {
         data() {
             return {
+                lastFocusSelect: false,
+
+                visible: false,
                 //當前編輯列id
                 editRowId: '',
 
@@ -145,45 +174,50 @@
                     },
                 ],
                 //table資料
-                tableData: [{
-                    id: 1,
-                    date: '2016-05-02',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    id: 2,
-                    date: '2016-05-04',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1517 弄'
-                }, {
-                    id: 3,
-                    date: '2016-05-01',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1519 弄'
-                }, {
-                    id: 4,
-                    date: '2016-05-03',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1516 弄'
-                }],
+                tableData: [
+                    {
+                        id: 1,
+                        date: '2016-05-02',
+                        name: '王小虎',
+                        address: '上海市普陀区金沙江路 1518 弄'
+                    },
+                    {
+                        id: 2,
+                        date: '2016-05-04',
+                        name: '王小虎',
+                        address: '上海市普陀区金沙江路 1517 弄'
+                    }, {
+                        id: 3,
+                        date: '2016-05-01',
+                        name: '王小虎',
+                        address: '上海市普陀区金沙江路 1519 弄'
+                    }, {
+                        id: 4,
+                        date: '2016-05-03',
+                        name: '王小虎',
+                        address: '上海市普陀区金沙江路 1516 弄'
+                    },
+                ],
 
                 //select選項
-                options: [{
-                    value: '选项1',
-                    label: '黄金糕'
-                }, {
-                    value: '选项2',
-                    label: '双皮奶'
-                }, {
-                    value: '选项3',
-                    label: '蚵仔煎'
-                }, {
-                    value: '选项4',
-                    label: '龙须面'
-                }, {
-                    value: '选项5',
-                    label: '北京烤鸭'
-                }],
+                options: [
+                    {
+                        value: '选项1',
+                        label: '黄金糕'
+                    },
+                    {
+                        value: '选项2',
+                        label: '双皮奶'
+                    }, {
+                        value: '选项3',
+                        label: '蚵仔煎'
+                    }, {
+                        value: '选项4',
+                        label: '龙须面'
+                    }, {
+                        value: '选项5',
+                        label: '北京烤鸭'
+                    }],
                 selectValue: '',
                 nameValue: '',
             }
@@ -192,7 +226,7 @@
 
         },
         mounted() {
-
+            console.log(this.tableData)
         },
         watch: {},
         methods: {
@@ -201,50 +235,31 @@
                 console.log(reg.test(value));
                 // this.item2Value = value.replace(//, '');
             },
-            tableCellClick(row, column, cell){
-                switch (column.label) {
-                    case this.$t('date'): {
-                        this.dateCellEdit(row, cell);
-                        break;
-                    }
-                    case this.$t('name'): {
-                        this.nameCellEidt(row, cell);
-                        break;
-                    }
-                    default: {
-                        break;
-                    }
+            leaveEditSelect(){
+                console.log('leave select');
+            },
+            leaveEditCell() {
+                console.log('leave input');
+            },
+            focusInput(){
+                if(this.lastFocusSelect){
+                    setTimeout(function(){
+                        console.log('focus input');
+                        this.lastFocusSelect = false;
+                    }, 50)
+                }else{
+                    console.log('focus input');
                 }
             },
-            /**
-             *
-             * @param row
-             * @param cell
-             */
-            dateCellEdit(row, cell){
-                this.editRowId = row.id;
-                let cell_string = cell.children[0].children[0];
-                let cell_input = cell.children[0].children[1];
-                cell_string.style.display = 'none';
-                cell_input.style.display = 'block';
+            focusSelect(){
+                this.lastFocusSelect = true
+                console.log('focus select');
             },
             /**
              *
-             * @param row
-             * @param cell
              */
-            nameCellEidt(row, cell){
-                let cell_string = cell.children[0].children[0];
-                let cell_input = cell.children[0].children[1];
-                console.log(cell_string);
-                cell_string.style.display = 'none';
-                cell_input.style.display = 'block';
-            },
-            leaveEditCell(){
-                // alert(this.selectValue);
-            },
-            leaveSelectEditCell() {
-                alert(this.selectValue);
+            changeTableData() {
+
             }
 
         }
@@ -252,11 +267,17 @@
 </script>
 <style lang="scss">
     .edit-table {
-        .el-select {
-            display: none;
+        .el-input__inner {
+            border-color: rgba(0, 0, 0, 0);
+            background-color: rgba(0, 0, 0, 0);
         }
+
+        .el-select {
+            /*display: none;*/
+        }
+
         .el-input {
-            display: none;
+            /*display: none;*/
         }
     }
 </style>
