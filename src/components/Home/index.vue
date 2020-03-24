@@ -161,6 +161,8 @@
 <style lang="scss">
     @import "../../sass/reset";
     @import "../../sass/variable";
+    @import "vue-select/src/scss/vue-select.scss";
+
 
     #home {
         //左上角專案名稱區塊。

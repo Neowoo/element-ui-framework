@@ -73,9 +73,23 @@
                                 label="日期"
                                 width="180">
                             <template slot-scope="scope">
+<!--                                <input type="date" v-model="scope.row.date">-->
+                                <el-date-picker
+                                        v-model="scope.row.date"
+                                        type="date"
+                                        placeholder="选择日期时间" @focus="focusDate" @blur="leaveDate">
+                                </el-date-picker>
+                            </template>
+
+                        </el-table-column>
+                        <el-table-column
+                                label="食物"
+                                width="180">
+                            <template slot-scope="scope">
                                 <!--                                <span>{{scope.row.date}}</span>-->
                                 <el-select
-                                        v-model="tableData[scope.$index].date"
+                                        class="deposit-way-column"
+                                        v-model="tableData[scope.$index].food"
                                         placeholder="請選擇" @focus="focusSelect" @blur="leaveEditSelect">
                                     <el-option
                                             v-for="item in options"
@@ -84,6 +98,17 @@
                                             :value="item.value">
                                     </el-option>
                                 </el-select>
+<!--                                <select-->
+<!--                                        class="deposit-way-select"-->
+<!--                                        v-model="tableData[scope.$index].food"-->
+<!--                                        placeholder="請選擇" @focus="focusSelect" @blur="leaveEditSelect">-->
+<!--                                    <option-->
+<!--                                            v-for="item in options"-->
+<!--                                            :key="item.value"-->
+<!--                                            :label="item.label"-->
+<!--                                            :value="item.value">-->
+<!--                                    </option>-->
+<!--                                </select>-->
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -177,23 +202,27 @@
                 tableData: [
                     {
                         id: 1,
-                        date: '2016-05-02',
+                        date: '2020-03-23',
+                        food: '选项1',
                         name: '王小虎',
                         address: '上海市普陀区金沙江路 1518 弄'
                     },
                     {
                         id: 2,
-                        date: '2016-05-04',
+                        date: '2020-03-23',
+                        food: '选项2',
                         name: '王小虎',
                         address: '上海市普陀区金沙江路 1517 弄'
                     }, {
                         id: 3,
-                        date: '2016-05-01',
+                        date: '2020-03-23',
+                        food: '选项3',
                         name: '王小虎',
                         address: '上海市普陀区金沙江路 1519 弄'
                     }, {
                         id: 4,
-                        date: '2016-05-03',
+                        date: '2020-03-23',
+                        food: '选项4',
                         name: '王小虎',
                         address: '上海市普陀区金沙江路 1516 弄'
                     },
@@ -237,31 +266,69 @@
             },
             leaveEditSelect(){
                 console.log('leave select');
+                this.lastFocusSelect = false;
             },
             leaveEditCell() {
                 console.log('leave input');
             },
             focusInput(){
+                console.log(this.lastFocusSelect)
                 if(this.lastFocusSelect){
+                    let system = this;
                     setTimeout(function(){
-                        console.log('focus input');
-                        this.lastFocusSelect = false;
-                    }, 50)
+                        if(system.lastFocusSelect){
+                            system.focusInput();
+                        } else {
+                            console.log('focus input')
+                        }
+                    }, 5);
+
                 }else{
                     console.log('focus input');
                 }
             },
             focusSelect(){
-                this.lastFocusSelect = true
-                console.log('focus select');
+                if(this.lastFocusSelect){
+                    let system = this;
+                    setTimeout(function(){
+                        if(system.lastFocusSelect){
+                            system.focusSelect();
+                        } else {
+                            console.log('focus input')
+                        }
+                    }, 1);
+                } else {
+                    console.log('focus select');
+                    this.lastFocusSelect = true;
+                }
+
+
             },
             /**
              *
              */
             changeTableData() {
 
+            },
+            focusDate(){
+                if(this.lastFocusSelect){
+                    let system = this;
+                    setTimeout(function(){
+                        if(system.lastFocusSelect){
+                            system.focusDate();
+                        } else {
+                            console.log('focus date')
+                        }
+                    }, 1);
+                } else {
+                    console.log('focus date');
+                    this.lastFocusSelect = true;
+                }
+            },
+            leaveDate(){
+                console.log('leave date');
+                this.lastFocusSelect = false;
             }
-
         }
     }
 </script>
@@ -279,5 +346,21 @@
         .el-input {
             /*display: none;*/
         }
+        .deposit-way-select{
+            height: 40px;
+            width: 100%;
+            padding:0 30px 0 15px;
+            font-size: inherit;
+            text-align: center;
+            border-color: rgba(0,0,0,0);
+            background-color: rgba(0,0,0,0);
+        }
+        select{
+            &:focus{
+                /*appearance: auto;*/
+            }
+            appearance: none;
+        }
+
     }
 </style>
