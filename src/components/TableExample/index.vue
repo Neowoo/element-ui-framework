@@ -83,6 +83,18 @@
 
                         </el-table-column>
                         <el-table-column
+                                prop="name"
+                                label="姓名"
+                                width="180">
+                            <template slot-scope="scope">
+                                <!--                                <span>{{scope.row.name}}</span>-->
+                                <el-input
+                                        v-model="tableData[scope.$index].name" @focus="focusInput" @blur="leaveEditCell">
+
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
                                 label="食物"
                                 width="180">
                             <template slot-scope="scope">
@@ -109,18 +121,6 @@
 <!--                                            :value="item.value">-->
 <!--                                    </option>-->
 <!--                                </select>-->
-                            </template>
-                        </el-table-column>
-                        <el-table-column
-                                prop="name"
-                                label="姓名"
-                                width="180">
-                            <template slot-scope="scope">
-                                <!--                                <span>{{scope.row.name}}</span>-->
-                                <el-input
-                                        v-model="tableData[scope.$index].name" @focus="focusInput" @blur="leaveEditCell">
-
-                                </el-input>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -272,7 +272,6 @@
                 console.log('leave input');
             },
             focusInput(){
-                console.log(this.lastFocusSelect)
                 if(this.lastFocusSelect){
                     let system = this;
                     setTimeout(function(){
@@ -294,14 +293,14 @@
                         if(system.lastFocusSelect){
                             system.focusSelect();
                         } else {
-                            console.log('focus input')
+                            console.log('focus select');
+                            system.lastFocusSelect = true;
                         }
                     }, 1);
                 } else {
                     console.log('focus select');
                     this.lastFocusSelect = true;
                 }
-
 
             },
             /**
@@ -317,13 +316,15 @@
                         if(system.lastFocusSelect){
                             system.focusDate();
                         } else {
-                            console.log('focus date')
+                            console.log('focus date');
+                            system.lastFocusSelect = true;
                         }
                     }, 1);
                 } else {
                     console.log('focus date');
                     this.lastFocusSelect = true;
                 }
+
             },
             leaveDate(){
                 console.log('leave date');
