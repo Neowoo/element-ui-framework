@@ -75,6 +75,7 @@
                             <template slot-scope="scope">
 <!--                                <input type="date" v-model="scope.row.date">-->
                                 <el-date-picker
+                                        @keydown.tab.native="tabCooling($event, 170)"
                                         v-model="scope.row.date"
                                         type="date"
                                         placeholder="选择日期时间" @focus="focusDate" @blur="leaveDate">
@@ -89,7 +90,7 @@
                             <template slot-scope="scope">
                                 <!--                                <span>{{scope.row.name}}</span>-->
                                 <el-input
-                                        v-model="tableData[scope.$index].name" @focus="focusInput" @blur="leaveEditCell">
+                                        v-model="tableData[scope.$index].name" @focus="focusInput" @blur="leaveEditCell" @keydown.tab.native="tabCooling($event)">
 
                                 </el-input>
                             </template>
@@ -102,7 +103,7 @@
                                 <el-select
                                         class="deposit-way-column"
                                         v-model="tableData[scope.$index].food"
-                                        placeholder="請選擇" @focus="focusSelect" @blur="leaveEditSelect">
+                                        placeholder="請選擇" @focus="focusSelect" @blur="leaveEditSelect" @keydown.tab.native="tabCooling($event)">
                                     <el-option
                                             v-for="item in options"
                                             :key="item.value"
@@ -128,7 +129,7 @@
                                 label="地址">
                             <template slot-scope="scope">
                                 <el-input
-                                        v-model="tableData[scope.$index].address" @focus="focusInput" @blur="leaveEditCell">
+                                        v-model="tableData[scope.$index].address" @focus="focusInput" @blur="leaveEditCell" @input="verify($event,'test')" @keydown.tab.native="tabCooling($event)">
 
                                 </el-input>
                             </template>
@@ -163,6 +164,7 @@
     export default {
         data() {
             return {
+                coolingTime: 0,
                 lastFocusSelect: false,
 
                 visible: false,
@@ -255,13 +257,15 @@
 
         },
         mounted() {
-            console.log(this.tableData)
         },
-        watch: {},
+        watch: {
+            coolingTime(value){
+                console.log(value);
+            }
+        },
         methods: {
             secondDecimalAndIntegerRegexForItem2Value(value) {
                 let reg = /^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,2})?$/;
-                console.log(reg.test(value));
                 // this.item2Value = value.replace(//, '');
             },
             leaveEditSelect(){
@@ -329,6 +333,31 @@
             leaveDate(){
                 console.log('leave date');
                 this.lastFocusSelect = false;
+            },
+            verify(value, column){
+                console.log(value, column);
+            },
+            tabCooling(event){
+                let limit_second = 80;
+                if(this.coolingTime < limit_second && this.coolingTime !== 0){
+                    event.preventDefault();
+                } else if(this.coolingTime === 0) {
+                    this.coolingTimeStart(limit_second);
+                }
+            },
+            coolingTimeStart(limit){
+                let limit_second = limit;
+                let system = this;
+                if (this.coolingTime >= limit) {
+                    if (this.coolingTime === limit_second) {
+                        this.coolingTime = 0
+                    }
+                } else {
+                    this.coolingTime++;
+                    setTimeout(function () {
+                        system.coolingTimeStart(limit_second)
+                    }, 1);
+                }
             }
         }
     }
